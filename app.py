@@ -33,13 +33,19 @@ def index():
     global history
 
     if request.method == "POST":
-        file = request.files["file"]
+        file = request.files.get("file")
+        model_choice = request.form.get("model", "all")
+        old_image = request.form.get("old_image")
 
-        if file.filename == "":
+        # ✅ HANDLE IMAGE PERSISTENCE
+        if file and file.filename != "":
+            path = os.path.join(UPLOAD_FOLDER, file.filename)
+            file.save(path)
+        else:
+            path = old_image
+
+        if not path:
             return redirect("/")
-
-        path = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(path)
 
         # Preprocess
         img = cv2.imread(path, 0)
@@ -64,36 +70,45 @@ def index():
             feat = feat.view(1,-1).numpy()
 
         hyb_pred = svm.predict(feat)[0]
-        hyb_conf = 0.90  # approx
+        hyb_conf = 0.90
 
-        # Final decision (CNN)
-        final = classes[cnn_pred]
+        # Model selection
+        if model_choice == "cnn":
+            prediction = classes[cnn_pred]
+        elif model_choice == "resnet":
+            prediction = classes[res_pred]
+        elif model_choice == "hybrid":
+            prediction = classes[hyb_pred]
+        else:
+            prediction = classes[cnn_pred]
 
         # GradCAM
         cam_map = cam(input_tensor=tensor)[0]
         img3 = np.repeat(img_norm[:,:,np.newaxis],3,axis=2)
         vis = show_cam_on_image(img3, cam_map, use_rgb=True)
 
-        cam_path = os.path.join(UPLOAD_FOLDER, "cam_"+file.filename)
+        cam_path = os.path.join(UPLOAD_FOLDER, "cam_"+os.path.basename(path))
         cv2.imwrite(cam_path, vis)
 
-        # Save history
-        history.insert(0, final)
+        history.insert(0, prediction)
 
         return render_template("index.html",
+            model=model_choice,
+            prediction=prediction,
             cnn=classes[cnn_pred],
             resnet=classes[res_pred],
             hybrid=classes[hyb_pred],
             cnn_conf=round(cnn_conf*100,2),
-            res_conf=round(res_conf*100,2),
-            hyb_conf=round(hyb_conf*100,2),
-            final=final,
+            resnet_conf=round(res_conf*100,2),
+            hybrid_conf=round(hyb_conf*100,2),
             image=path,
+            old_image=path,   # 👈 IMPORTANT
             cam=cam_path,
             history=history[:5]
         )
 
     return render_template("index.html", history=history[:5])
+    
 
 if __name__ == "__main__":
     app.run(debug=True)

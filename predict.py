@@ -10,7 +10,7 @@ model.eval()
 classes = ["Normal", "Benign", "Malignant"]
 
 # Load image
-img_path = "test2.jpg"
+img_path = "test.jpg"
 
 img = cv2.imread(img_path, 0)
 img = cv2.resize(img, (224, 224))
@@ -28,4 +28,4 @@ for i, cls in enumerate(classes):
 
 pred = torch.argmax(probs).item()
 
-print("\n✅ Final Prediction:", classes[pred])
+print("\n Final Prediction:", classes[pred])

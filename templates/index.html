@@ -3,7 +3,7 @@
 <head>
     <title>Breast Cancer Detection AI</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -16,95 +16,125 @@
         /* HEADER */
         .header {
             background: white;
-            padding: 15px 40px;
+            padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .logo {
             font-size: 22px;
-            font-weight: 600;
+            font-weight: 700;
             color: #1a73e8;
         }
 
-        /* HERO */
+        .tagline {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* TITLE */
         .hero {
-            padding: 40px;
             text-align: center;
+            padding: 30px 20px;
         }
 
         .hero h1 {
-            font-size: 36px;
-            margin-bottom: 30px;
+            font-size: 32px;
+            margin-bottom: 10px;
         }
 
-        /* MAIN LAYOUT */
+        .hero p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* MAIN */
         .container {
             display: flex;
             gap: 30px;
             max-width: 1200px;
             margin: auto;
-            align-items: flex-start;
+            padding: 20px;
         }
 
-        /* LEFT SIDE (UPLOAD) */
-        .upload-card {
-            flex: 1;
+        .upload-card, .result-card {
             background: white;
             padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
         }
 
-        /* RIGHT SIDE (RESULTS) */
-        .result-card {
-            flex: 2;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        .upload-card { flex: 1; }
+        .result-card { flex: 2; }
+
+        /* MODEL LIST */
+        .model-list {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .model-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: #f1f3f7;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .model-item:hover {
+            background: #e3f2fd;
+        }
+
+        .model-item.active {
+            background: #1a73e8;
+            color: white;
         }
 
         /* DROP ZONE */
         .drop-zone {
             border: 2px dashed #1a73e8;
             padding: 30px;
-            border-radius: 10px;
+            border-radius: 12px;
+            text-align: center;
             cursor: pointer;
             margin-bottom: 20px;
+            background: #fafcff;
         }
 
         .drop-zone:hover {
-            background: #f0f6ff;
+            background: #eef5ff;
         }
 
         button {
+            width: 100%;
             background: #1a73e8;
             color: white;
+            padding: 14px;
             border: none;
-            padding: 12px 30px;
-            border-radius: 6px;
+            border-radius: 8px;
+            font-size: 15px;
             cursor: pointer;
-            font-size: 16px;
         }
 
         button:hover {
-            background: #1669c1;
+            background: #155ec0;
         }
 
-        .result-main {
+        /* RESULT */
+        .result-title {
             font-size: 24px;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .normal { color: green; }
         .benign { color: orange; }
         .malignant { color: red; }
 
-        /* IMAGES */
         .images {
             display: flex;
             gap: 20px;
@@ -112,23 +142,10 @@
         }
 
         .images img {
-            width: 300px;
+            width: 100%;
+            max-width: 300px;
             border-radius: 10px;
         }
-
-        /* CHART */
-        canvas {
-            margin-top: 20px;
-            width: 100% !important;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 900px) {
-            .container {
-                flex-direction: column;
-            }
-        }
-
     </style>
 </head>
 
@@ -136,109 +153,119 @@
 
 <!-- HEADER -->
 <div class="header">
-    <div class="logo">AI Breast Cancer Detection</div>
-    <div>Powered by CNN + ResNet + Hybrid</div>
+    <div class="logo">🧠 AI Cancer Detection</div>
+    <div class="tagline">Deep Learning Powered Diagnosis System</div>
 </div>
 
-<!-- HERO -->
+<!-- TITLE -->
 <div class="hero">
-    <h1>Upload Mammogram & Detect Cancer</h1>
+    <h1>Breast Cancer Detection using Mammography</h1>
+    <p>Upload a mammogram image and get instant AI-based diagnosis</p>
+</div>
 
-    <div class="container">
+<div class="container">
 
-        <!-- LEFT -->
-        <div class="upload-card">
-            <form method="POST" enctype="multipart/form-data">
+    <!-- LEFT -->
+    <div class="upload-card">
+        <form method="POST" enctype="multipart/form-data">
 
-                <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
-                    Drag & Drop / Click / Paste Image
-                    <input type="file" name="file" id="fileInput" hidden>
-                </div>
+            <h3>Select Model</h3>
 
-                <button type="submit">Predict</button>
-            </form>
-        </div>
-
-        <!-- RIGHT -->
-        <div class="result-card">
-
-            {% if cnn %}
-
-            <div class="result-main {{ cnn|lower }}">
-                Final Prediction: {{ cnn }}
+            <div class="model-list">
+                <div class="model-item" data-value="all">All Models</div>
+                <div class="model-item" data-value="cnn">CNN</div>
+                <div class="model-item" data-value="resnet">ResNet</div>
+                <div class="model-item" data-value="hybrid">Hybrid</div>
             </div>
 
+            <input type="hidden" name="model" id="selectedModel" value="{{ model | default('all') }}">
+            <input type="hidden" name="old_image" value="{{ old_image }}">
+
+            <div class="drop-zone" onclick="fileInput.click()">
+                <span id="dropText">
+                    {% if image %}
+                        {{ image.split('/')[-1] }}
+                    {% else %}
+                        Drag & Drop / Click Image
+                    {% endif %}
+                </span>
+                <input type="file" name="file" id="fileInput" hidden>
+            </div>
+
+            <button type="submit">Predict</button>
+        </form>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="result-card">
+
+        {% if prediction %}
+        <div class="result-title {{ prediction|lower }}">
+            Final Prediction: {{ prediction }}
+        </div>
+
+        {% if model == "all" %}
             <p><strong>CNN:</strong> {{ cnn }}</p>
             <p><strong>ResNet:</strong> {{ resnet }}</p>
             <p><strong>Hybrid:</strong> {{ hybrid }}</p>
+        {% else %}
+            <p><strong>Model Used:</strong> {{ model }}</p>
+        {% endif %}
 
-            <div class="images">
-                <div>
-                    <h4>Input</h4>
-                    <img src="{{ image }}">
-                </div>
-                <div>
-                    <h4>Grad-CAM</h4>
-                    <img src="{{ cam }}">
-                </div>
+        <div class="images">
+            <div>
+                <h4>Input</h4>
+                <img src="{{ image }}">
             </div>
-
-            <!-- GRAPH -->
-            <canvas id="chart"></canvas>
-
-            <script>
-                const ctx = document.getElementById('chart');
-
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['CNN', 'ResNet', 'Hybrid'],
-                        datasets: [{
-                            label: 'Model Confidence',
-                            data: [95, 93, 94],
-                            borderWidth: 1
-                        }]
-                    }
-                });
-            </script>
-
-            {% endif %}
-
+            <div>
+                <h4>Grad-CAM</h4>
+                <img src="{{ cam }}">
+            </div>
         </div>
 
+        {% if model == "all" %}
+        <canvas id="chart"></canvas>
+        <script>
+            const data = JSON.parse('{{ [cnn_conf, resnet_conf, hybrid_conf] | tojson | safe }}');
+
+            new Chart(document.getElementById('chart'), {
+                type:'bar',
+                data:{
+                    labels:['CNN','ResNet','Hybrid'],
+                    datasets:[{ label:'Confidence', data:data }]
+                }
+            });
+        </script>
+        {% endif %}
+        {% endif %}
     </div>
+
 </div>
 
 <script>
-/* DRAG & DROP */
-const dropZone = document.querySelector('.drop-zone');
+// MODEL SELECT
+const items = document.querySelectorAll(".model-item");
+const hiddenInput = document.getElementById("selectedModel");
+const currentModel = "{{ model | default('all') }}";
 
-dropZone.addEventListener('dragover', e => {
-    e.preventDefault();
-    dropZone.style.background = "#e3f2fd";
+items.forEach(item=>{
+    if(item.dataset.value===currentModel){ item.classList.add("active"); }
+    item.onclick=()=>{
+        items.forEach(i=>i.classList.remove("active"));
+        item.classList.add("active");
+        hiddenInput.value=item.dataset.value;
+    };
 });
 
-dropZone.addEventListener('dragleave', () => {
-    dropZone.style.background = "white";
-});
+// FILE NAME
+const fileInput=document.getElementById("fileInput");
+const dropText=document.getElementById("dropText");
 
-dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    document.getElementById('fileInput').files = e.dataTransfer.files;
-});
-
-/* PASTE IMAGE */
-document.addEventListener('paste', function (event) {
-    const items = event.clipboardData.items;
-    for (let item of items) {
-        if (item.type.indexOf("image") !== -1) {
-            const file = item.getAsFile();
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            document.getElementById('fileInput').files = dataTransfer.files;
-        }
+fileInput.onchange=()=>{
+    if(fileInput.files.length>0){
+        dropText.innerText=fileInput.files[0].name;
     }
-});
+};
 </script>
 
 </body>
